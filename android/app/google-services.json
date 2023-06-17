@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "571733115290",
+    "project_id": "chad-notifications",
+    "storage_bucket": "chad-notifications.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571733115290:android:48e1ec11b37a1ee727fa23",
+        "android_client_info": {
+          "package_name": "com.example.motivation_notifications"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "571733115290-79gch7mev34gbo07gq9ri4qtuju87s69.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-OnGIAbi469LzPJmERIP0UgteZ9toNA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "571733115290-79gch7mev34gbo07gq9ri4qtuju87s69.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
