@@ -1,8 +1,13 @@
-# import os
+import os
 import openai
+import dotenv 
 
 # Replace with your key
-openai.api_key = ""
+dotenv.load_dotenv()
+Apikey = os.environ.get("OPENAI_API_KEY")
+# print(Apikey)
+# print(type(Apikey))
+openai.api_key = Apikey
 
 completion = openai.Completion()
 
