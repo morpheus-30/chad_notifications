@@ -1,7 +1,7 @@
 // import 'package:flutter/cupertino.dart';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'networkHelper.dart';
+import 'network_helper.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,9 +17,9 @@ class NotificationService {
   }
   NotificationService._internal();
   void init() async {
-    final AndroidInitializationSettings initializationSettingsAndroid =
+    const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings =
+    const InitializationSettings initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
     );
@@ -37,30 +37,30 @@ class NotificationService {
     try {
       body = await networkHelper.getData("http://192.168.29.254:5000/");
       body = jsonDecode(body);
-      print(body);
+      // print(body);
       if (body["message"] != "nothing") {
         await messages.add({'message': body["message"]});
-        print("Data submitted");
+        // print("Data submitted");
       }
       body = body["message"];
     } catch (e) {
-      print(e);
-      print("in catch");
+      // print(e);
+      // print("in catch");
       QuerySnapshot allMessages = await messages.get();
       final allData = allMessages.docs.map((e) => e.data()).toList();
       // print(allData);
       Random random = Random();
       var getRandomQuote = allData[random.nextInt(allData.length)] ??
           {"message": "No message found"};
-      if (allData.length > 0) {
+      if (allData.isNotEmpty) {
         body = (getRandomQuote as Map<String, dynamic>)["message"];
       }
-      print(body);
+      // print(body);
     }
     return body.toUpperCase();
   }
 
-  Future<void> triggerNotification() async {
+  Future<void> triggerNotification(String inputData) async {
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
     var androidChannelSpecifics = const AndroidNotificationDetails(
@@ -78,10 +78,9 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       notificationId,
       'WTF ARE YOU DOING?',
-      await getMotivationQuote(),
+      inputData,
       platformChannelSpecifics,
       payload: 'Test Payload',
-      
     );
   }
 

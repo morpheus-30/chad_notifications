@@ -2,7 +2,7 @@ import 'dart:async';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'NotificationPlugin.dart';
+import 'notification_plugin.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:auto_start_flutter/auto_start_flutter.dart';
 import 'package:disable_battery_optimization/disable_battery_optimization.dart';
@@ -10,16 +10,17 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 const fetchBackground = "fetchBackground";
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
       case fetchBackground:
         NotificationService notificationService = NotificationService();
-
         notificationService.init();
-        print("hi");
-        await notificationService.triggerNotification();
-        print("notification triggered");
+        // print("hi");
+        await notificationService.triggerNotification(
+            await notificationService.getMotivationQuote());
+        // print("notification triggered");
         break;
     }
     return Future.value(true);
@@ -38,19 +39,23 @@ Future<void> main() async {
     fetchBackground,
     frequency: const Duration(minutes: 60),
     constraints: Constraints(
+      requiresDeviceIdle: false,
+      requiresCharging: false,
+      requiresBatteryNotLow: false,
       networkType: NetworkType.connected,
     ),
   );
-  print("Task scheduled");
+  // print("Task scheduled");
 
   runApp(ResponsiveSizer(builder: (context, orientation, screenType) {
-    return MaterialApp(
+    return const MaterialApp(
       home: MyApp(),
     );
   }));
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,26 +75,27 @@ class MyApp extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('CHAD Notification',
+              Text('CHAD Notification',
                   style: TextStyle(
                     fontFamily: "someFont",
                     color: Colors.white,
-                    fontSize: 50,
+                    fontSize: 28.sp,
                   )),
-                  SizedBox(
+              SizedBox(
                 height: 2.h,
               ),
-              const Text('Your notifications has been activated! Now get pumped up every hour with CHAD!',
+              Text(
+                  'Your notifications has been activated! Now get pumped up every hour with CHAD!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: "someFont",
                     color: Colors.white70,
-                    fontSize: 20,
+                    fontSize: 18.sp,
                   )),
               SizedBox(
                 height: 5.h,
               ),
-              Container(
+              SizedBox(
                 height: 20.h,
                 width: 80.w,
                 child: ElevatedButton(
@@ -97,29 +103,107 @@ class MyApp extends StatelessWidget {
                         backgroundColor:
                             MaterialStateProperty.all<Color>(Colors.white30),
                         elevation: MaterialStateProperty.all<double>(30)),
-                    child: const Text("STOP THESE NOTIFICATIONS",
+                    child: Text("STOP THESE NOTIFICATIONS",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: "someFont",
                           color: Colors.white,
-                          fontSize: 40,
+                          fontSize: 25.sp,
                         )),
                     onPressed: () {
-                      AlertBox(context);
+                      alertBoxWithButtons(
+                        context,
+                        title: "AYO WTF?-",
+                        desc:
+                            "Got enough motivation? Or just gave up? Dude NEVER GIVE UP!",
+                        buttons: [
+                          DialogButton(
+                            onPressed: () => Navigator.pop(context),
+                            color: Colors.red,
+                            radius: BorderRadius.circular(0.0),
+                            child: Text(
+                              "CANCEL",
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 15.sp),
+                            ),
+                          ),
+                          DialogButton(
+                            onPressed: () {
+                              cancelNotifications();
+                              Navigator.pop(context);
+                              messageAlert(context,
+                                      "ALL NOTIFICATIONS HAS BEEN STOPPED")
+                                  .show();
+                              // print("Notifications stopped");
+                            },
+                            color: Colors.red,
+                            radius: BorderRadius.circular(0.0),
+                            child: Text(
+                              "STOP",
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 15.sp),
+                            ),
+                          ),
+                        ],
+                      );
                     }),
               ),
               SizedBox(
                 height: 10.h,
               ),
               ElevatedButton(
-                child: const Text("Optimization Settings"),
                 style: ButtonStyle(
                     backgroundColor:
                         MaterialStateProperty.all<Color>(Colors.white30),
                     elevation: MaterialStateProperty.all<double>(30)),
                 onPressed: () async {
-                  ShowAutoStartAndBatteryOptimizationDialog(context);
+                  alertBoxWithButtons(context,
+                      title: "CHAD not working?",
+                      desc:
+                          "Kindly enable Autostart and disable Battery Optimization for CHAD to work properly",
+                      buttons: [
+                        DialogButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            var test = (await isAutoStartAvailable) ?? false;
+                            if (test) {
+                              await getAutoStartPermission();
+                            }
+                          },
+                          color: Colors.red,
+                          radius: BorderRadius.circular(0.0),
+                          child: Text(
+                            "AUTOSTART",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 15.sp),
+                          ),
+                        ),
+                        DialogButton(
+                          onPressed: () async {
+                            var test = (await DisableBatteryOptimization
+                                    .isBatteryOptimizationDisabled) ??
+                                false;
+                            await DisableBatteryOptimization
+                                .showDisableBatteryOptimizationSettings();
+                            Navigator.pop(context);
+                            if (test) {
+                              messageAlert(context,
+                                      "BATTERY OPTIMIZATION ALREADY DISABLED")
+                                  .show();
+                            }
+                          },
+                          color: Colors.red,
+                          radius: BorderRadius.circular(0.0),
+                          child: Text(
+                            "BATTERY OPTIMIZATION",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 13.sp),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ]);
                 },
+                child: const Text("Optimization Settings"),
               ),
               ElevatedButton(
                 style: ButtonStyle(
@@ -130,7 +214,8 @@ class MyApp extends StatelessWidget {
                 onPressed: () async {
                   NotificationService notification = NotificationService();
                   // notification.getMotivationQuote();
-                  notification.triggerNotification();
+                  notification.triggerNotification(
+                      await notification.getMotivationQuote());
                 },
               ),
             ],
@@ -141,7 +226,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-void AlertBox(BuildContext context) {
+void alertBoxWithButtons(BuildContext context,
+    {required title,
+    required String desc,
+    required List<DialogButton> buttons}) {
   Alert(
           style: AlertStyle(
             backgroundColor: Colors.white10,
@@ -154,131 +242,48 @@ void AlertBox(BuildContext context) {
             ),
             animationType: AnimationType.grow,
             buttonAreaPadding:
-                EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-            descStyle: const TextStyle(
+                const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+            descStyle: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 20.sp,
               fontFamily: "someFont",
             ),
-            titleStyle: const TextStyle(
+            titleStyle: TextStyle(
               color: Colors.red,
-              fontSize: 30,
+              fontSize: 25.sp,
               fontFamily: "someFont",
             ),
           ),
-          buttons: [
-            DialogButton(
-              onPressed: () => Navigator.pop(context),
-              color: Colors.red,
-              radius: BorderRadius.circular(0.0),
-              child: const Text(
-                "CANCEL",
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
-            ),
-            DialogButton(
-              onPressed: () async {
-                await Workmanager().cancelAll();
-                Navigator.pop(context);
-                print("Notifications stopped");
-              },
-              color: Colors.red,
-              radius: BorderRadius.circular(0.0),
-              child: const Text(
-                "STOP",
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
-            ),
-          ],
+          buttons: buttons,
           context: context,
-          title: "AYO WTF?-",
-          desc: "Got enough motivation? Or just gave up? Dude NEVER GIVE UP!")
+          title: title,
+          desc: desc)
       .show();
 }
 
-void ShowAutoStartAndBatteryOptimizationDialog(context) {
-  Alert(
-          style: AlertStyle(
-            backgroundColor: Colors.white10,
-            isCloseButton: false,
-            alertBorder: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(0),
-              side: const BorderSide(
-                color: Colors.white10,
-              ),
-            ),
-            animationType: AnimationType.grow,
-            buttonAreaPadding:
-                EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-            descStyle: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontFamily: "someFont",
-            ),
-            titleStyle: const TextStyle(
-              color: Colors.red,
-              fontSize: 30,
-              fontFamily: "someFont",
-            ),
+Alert messageAlert(context, String message) {
+  return Alert(
+      context: context,
+      title: message,
+      style: AlertStyle(
+        titleStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20.sp,
+          fontFamily: "someFont",
+        ),
+        backgroundColor: Colors.white10,
+        isCloseButton: false,
+        animationType: AnimationType.grow,
+        alertBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(0),
+          side: const BorderSide(
+            color: Colors.white10,
           ),
-          buttons: [
-            DialogButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                var test = (await isAutoStartAvailable) ?? false;
-                if (test) {
-                  await getAutoStartPermission();
-                }
-              },
-              color: Colors.red,
-              radius: BorderRadius.circular(0.0),
-              child: const Text(
-                "AUTOSTART",
-                style: TextStyle(color: Colors.white, fontSize: 10),
-              ),
-            ),
-            DialogButton(
-              onPressed: () async {
-                var test = (await DisableBatteryOptimization
-                        .isBatteryOptimizationDisabled) ??
-                    false;
-                await DisableBatteryOptimization
-                    .showDisableBatteryOptimizationSettings();
-                Navigator.pop(context);
-                if (test) {
-                  Alert(
-                      context: context,
-                      title: "BATTERY OPTIMIZATION ALREADY DISABLED",
-                      style: AlertStyle(
-                        titleStyle: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontFamily: "someFont",
-                        ),
-                        backgroundColor: Colors.white10,
-                        isCloseButton: false,
-                        alertBorder: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                          side: const BorderSide(
-                            color: Colors.white10,
-                          ),
-                        ),
-                      ),
-                      buttons: []).show();
-                }
-              },
-              color: Colors.red,
-              radius: BorderRadius.circular(0.0),
-              child: const Text(
-                "BATTERY OPTIMIZATION",
-                style: TextStyle(color: Colors.white, fontSize: 10),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-          context: context,
-          title: "CHAD not working?",
-          desc:
-              "Kindly enable Autostart and disable Battery Optimization for CHAD to work properly")
-      .show();
+        ),
+      ),
+      buttons: []);
+}
+
+void cancelNotifications() async {
+  await Workmanager().cancelAll();
 }
