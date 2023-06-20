@@ -8,6 +8,7 @@ import 'package:auto_start_flutter/auto_start_flutter.dart';
 import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:app_settings/app_settings.dart';
 
 const fetchBackground = "fetchBackground";
 @pragma('vm:entry-point')
@@ -85,12 +86,12 @@ class MyApp extends StatelessWidget {
                 height: 2.h,
               ),
               Text(
-                  'Your notifications has been activated! Now get pumped up every hour with CHAD!',
+                  'Your hourly dose of motivation has been activated! Now get pumped up every hour with CHAD!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: "someFont",
                     color: Colors.white70,
-                    fontSize: 18.sp,
+                    fontSize: 17.sp,
                   )),
               SizedBox(
                 height: 5.h,
@@ -114,6 +115,8 @@ class MyApp extends StatelessWidget {
                       alertBoxWithButtons(
                         context,
                         title: "AYO WTF?-",
+                        buttonPadding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 10),
                         desc:
                             "Got enough motivation? Or just gave up? Dude NEVER GIVE UP!",
                         buttons: [
@@ -160,8 +163,23 @@ class MyApp extends StatelessWidget {
                   alertBoxWithButtons(context,
                       title: "CHAD not working?",
                       desc:
-                          "Kindly enable Autostart and disable Battery Optimization for CHAD to work properly",
+                          "First enable Notificaions for CHAD then enable Autostart and disable Battery Optimization for CHAD to work properly",
+                      buttonPadding:
+                          EdgeInsets.symmetric(horizontal: 1.w, vertical: 5),
                       buttons: [
+                        DialogButton(
+                          onPressed: () {
+                            AppSettings.openNotificationSettings();
+                          },
+                          color: Colors.red,
+                          radius: BorderRadius.circular(0.0),
+                          child: Text(
+                            "ENABLE NOTIFICATIONS",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 13.sp),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         DialogButton(
                           onPressed: () async {
                             Navigator.pop(context);
@@ -229,7 +247,8 @@ class MyApp extends StatelessWidget {
 void alertBoxWithButtons(BuildContext context,
     {required title,
     required String desc,
-    required List<DialogButton> buttons}) {
+    required List<DialogButton> buttons,
+    required EdgeInsets buttonPadding}) {
   Alert(
           style: AlertStyle(
             backgroundColor: Colors.white10,
@@ -241,8 +260,7 @@ void alertBoxWithButtons(BuildContext context,
               ),
             ),
             animationType: AnimationType.grow,
-            buttonAreaPadding:
-                const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+            buttonAreaPadding: buttonPadding,
             descStyle: TextStyle(
               color: Colors.white,
               fontSize: 20.sp,

@@ -71,6 +71,7 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'test ticker',
+      styleInformation: BigTextStyleInformation(''),
     );
     var platformChannelSpecifics =
         NotificationDetails(android: androidChannelSpecifics);
